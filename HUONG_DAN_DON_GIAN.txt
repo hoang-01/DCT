@@ -575,5 +575,8 @@ Nếu gặp vấn đề, đọc lại guides hoặc check troubleshooting sectio
 
 ================================================================================
                             END OF GUIDE
+DCT 2D High-Speed FPGA Core v1.0
+Tác giả: Bé Tiến Đạt Xinh Gái
+October 16, 2025
 ================================================================================
 

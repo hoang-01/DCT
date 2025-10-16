@@ -360,5 +360,6 @@ MIT License - Free for academic and commercial use
 ---
 
 *Generated: October 16, 2025*  
-*DCT 2D High-Speed FPGA Core v1.0*
+*DCT 2D High-Speed FPGA Core v1.0*  
+*Tác giả: Bé Tiến Đạt Xinh Gái*
 

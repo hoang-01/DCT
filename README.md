@@ -253,7 +253,7 @@ MIT License - Free for academic and commercial use.
 
 ---
 
-**Tác giả**: Auto-generated DCT 2D FPGA Core  
+**Tác giả**: hoang-01  
 **Phiên bản**: 1.0  
-**Ngày**: 2024
+**Ngày**: October 2025
 

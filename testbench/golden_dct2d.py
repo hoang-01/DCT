@@ -3,6 +3,7 @@
 Golden DCT-II 2D Model for verification
 Uses scipy.fftpack for reference DCT computation
 Generates test vectors and compares with RTL output
+Author: Bé Tiến Đạt Xinh Gái
 """
 
 import numpy as np

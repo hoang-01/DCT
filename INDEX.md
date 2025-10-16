@@ -337,5 +337,6 @@ Xem: rtl/dct2d_top.v (có comments chi tiết)
 ---
 
 Last updated: October 16, 2025  
-DCT 2D High-Speed FPGA Core v1.0
+DCT 2D High-Speed FPGA Core v1.0  
+Tác giả: Bé Tiến Đạt Xinh Gái
 

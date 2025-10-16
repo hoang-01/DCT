@@ -1,7 +1,7 @@
 ################################################################################
 # Vivado Synthesis Script for DCT 2D High-Speed Core
 # Target: Xilinx Artix-7 / Zynq-7000 / UltraScale
-# Author: Auto-generated
+# Author: Bé Tiến Đạt Xinh Gái
 ################################################################################
 
 # Configuration

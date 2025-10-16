@@ -301,5 +301,6 @@ Power Consumption (Estimated):
 ================================================================================
 End of Architecture Diagram
 DCT 2D High-Speed FPGA Core v1.0
+Tác giả: Bé Tiến Đạt Xinh Gái
 ================================================================================
 

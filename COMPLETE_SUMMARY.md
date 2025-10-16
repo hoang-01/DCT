@@ -604,6 +604,7 @@ cd hardware
 *DCT 2D High-Speed FPGA Core*  
 *Version 1.0*  
 *October 16, 2025*  
+*Tác giả: Bé Tiến Đạt Xinh Gái*
 
 **Designed for your Cyclone IV board! 🎯**
 

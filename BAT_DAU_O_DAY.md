@@ -551,5 +551,6 @@ Bạn có **ĐẦY ĐỦ** tài liệu hướng dẫn:
 
 *Last updated: October 16, 2025*  
 *DCT 2D High-Speed FPGA Core v1.0*  
+*Tác giả: Bé Tiến Đạt Xinh gái*  
 *All documentation in Vietnamese for easy learning!*
 
