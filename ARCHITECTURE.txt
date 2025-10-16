@@ -1,0 +1,305 @@
+================================================================================
+     DCT 2D HIGH-SPEED FPGA CORE - ARCHITECTURE DIAGRAM
+================================================================================
+
+┌────────────────────────────────────────────────────────────────────────────┐
+│                        DCT 2D TOP MODULE                                   │
+│                      (dct2d_top.v - AXI4-Stream)                          │
+└────────────────────────────────────────────────────────────────────────────┘
+                                    │
+                                    │ 8-bit pixels
+                                    │ 1 pixel/cycle
+                                    ▼
+┌────────────────────────────────────────────────────────────────────────────┐
+│                          INPUT BUFFER                                      │
+│                         (64 pixels = 8×8)                                 │
+│    ┌──────────────────────────────────────────────────────────────┐      │
+│    │  Row 0: [ P00 P01 P02 P03 P04 P05 P06 P07 ]                 │      │
+│    │  Row 1: [ P10 P11 P12 P13 P14 P15 P16 P17 ]                 │      │
+│    │  Row 2: [ P20 P21 P22 P23 P24 P25 P26 P27 ]                 │      │
+│    │  Row 3: [ P30 P31 P32 P33 P34 P35 P36 P37 ]                 │      │
+│    │  Row 4: [ P40 P41 P42 P43 P44 P45 P46 P47 ]                 │      │
+│    │  Row 5: [ P50 P51 P52 P53 P54 P55 P56 P57 ]                 │      │
+│    │  Row 6: [ P60 P61 P62 P63 P64 P65 P66 P67 ]                 │      │
+│    │  Row 7: [ P70 P71 P72 P73 P74 P75 P76 P77 ]                 │      │
+│    └──────────────────────────────────────────────────────────────┘      │
+└────────────────────────────────────────────────────────────────────────────┘
+                                    │
+                                    │ Process row-by-row
+                                    ▼
+┌────────────────────────────────────────────────────────────────────────────┐
+│                    ROW DCT (1D DCT - Loeffler)                            │
+│                       (dct1d_loeffler.v)                                  │
+│  ┌─────────────────────────────────────────────────────────────────────┐ │
+│  │  Stage 1: Input Buffering (8 samples)                              │ │
+│  │           x[0..7] → signed (center around 0)                        │ │
+│  ├─────────────────────────────────────────────────────────────────────┤ │
+│  │  Stage 2: First Butterfly Network                                  │ │
+│  │           a[i] = x[i] + x[7-i]    (even symmetry)                  │ │
+│  │           b[i] = x[i] - x[7-i]    (odd symmetry)                   │ │
+│  ├─────────────────────────────────────────────────────────────────────┤ │
+│  │  Stage 3: Second Butterfly                                          │ │
+│  │           c[i] = a[i] ± a[3-i]                                      │ │
+│  ├─────────────────────────────────────────────────────────────────────┤ │
+│  │  Stage 4: Even Part Processing                                      │ │
+│  │           X[0], X[4] from c[0±1]                                    │ │
+│  │           X[2], X[6] from rotations (C2, C6 multipliers)           │ │
+│  ├─────────────────────────────────────────────────────────────────────┤ │
+│  │  Stage 5: Odd Part Rotations                                        │ │
+│  │           8 multiplications with cos coefficients                   │ │
+│  │           (C1, C3, C5, C7) in parallel                             │ │
+│  ├─────────────────────────────────────────────────────────────────────┤ │
+│  │  Stage 6: Odd Part Butterfly + Final                                │ │
+│  │           X[1], X[3], X[5], X[7] computed                          │ │
+│  │           Total: 11 multipliers, 29 adders                         │ │
+│  └─────────────────────────────────────────────────────────────────────┘ │
+│                                                                            │
+│  Latency: ~12-15 cycles                                                   │
+│  Throughput: 1 sample/cycle (after warm-up)                              │
+│  Precision: Q1.14 fixed-point coefficients                               │
+└────────────────────────────────────────────────────────────────────────────┘
+                                    │
+                                    │ 16-bit coefficients
+                                    │ 8 per row, 8 rows total
+                                    ▼
+┌────────────────────────────────────────────────────────────────────────────┐
+│                    TRANSPOSE BUFFER (Ping-Pong)                           │
+│                      (transpose_buffer.v)                                 │
+│  ┌────────────────────────┐  ┌────────────────────────┐                  │
+│  │   Buffer A (BRAM)      │  │   Buffer B (BRAM)      │                  │
+│  │   64 × 16-bit          │  │   64 × 16-bit          │                  │
+│  │                        │  │                        │                  │
+│  │  Write: Row-major      │  │  Write: Row-major      │                  │
+│  │  [0][0..7]             │  │  [0][0..7]             │                  │
+│  │  [1][0..7]             │  │  [1][0..7]             │                  │
+│  │  ...                   │  │  ...                   │                  │
+│  │                        │  │                        │                  │
+│  │  Read: Column-major    │  │  Read: Column-major    │                  │
+│  │  [0..7][0]             │  │  [0..7][0]             │                  │
+│  │  [0..7][1]             │  │  [0..7][1]             │                  │
+│  │  ...                   │  │  ...                   │                  │
+│  └────────────────────────┘  └────────────────────────┘                  │
+│           ▲                            ▲                                   │
+│           │ Write to A                 │ Read from B                       │
+│           │ (while reading B)          │ (while writing A)                │
+│           └────────────────────────────┘                                  │
+│                  Ping-Pong Operation                                       │
+│                                                                            │
+│  Function: Row-major input → Column-major output (Transpose)              │
+│  Latency: 64 cycles to fill one buffer                                   │
+│  Resource: 2× BRAM blocks (dual-port)                                    │
+└────────────────────────────────────────────────────────────────────────────┘
+                                    │
+                                    │ Transposed data
+                                    │ (columns become rows)
+                                    ▼
+┌────────────────────────────────────────────────────────────────────────────┐
+│                   COLUMN DCT (1D DCT - Loeffler)                          │
+│                    (Same as Row DCT module)                               │
+│  ┌─────────────────────────────────────────────────────────────────────┐ │
+│  │  Same 6-stage pipeline as Row DCT                                   │ │
+│  │  Processes transposed data (columns of original)                    │ │
+│  │  Output: 2D DCT coefficients                                        │ │
+│  └─────────────────────────────────────────────────────────────────────┘ │
+│                                                                            │
+│  Latency: ~12-15 cycles (same as row DCT)                                │
+│  Throughput: 1 coefficient/cycle                                         │
+└────────────────────────────────────────────────────────────────────────────┘
+                                    │
+                                    │ 16-bit DCT coefficients
+                                    │ 1 per cycle
+                                    ▼
+┌────────────────────────────────────────────────────────────────────────────┐
+│                          OUTPUT STREAM                                     │
+│                     (AXI4-Stream Master)                                  │
+│    ┌──────────────────────────────────────────────────────────────┐      │
+│    │  Coef 0,0  Coef 0,1  Coef 0,2  ...  Coef 0,7                │      │
+│    │  Coef 1,0  Coef 1,1  Coef 1,2  ...  Coef 1,7                │      │
+│    │  ...                                                          │      │
+│    │  Coef 7,0  Coef 7,1  Coef 7,2  ...  Coef 7,7                │      │
+│    └──────────────────────────────────────────────────────────────┘      │
+│  Format: signed 16-bit, tlast asserted on last coefficient               │
+└────────────────────────────────────────────────────────────────────────────┘
+
+
+================================================================================
+                            TIMING DIAGRAM
+================================================================================
+
+Clock Cycles:  0    10   20   30   40   50   60   70   80   90   100
+               │    │    │    │    │    │    │    │    │    │    │
+Input Row 0:   ████████──────────────────────────────────────────────
+Input Row 1:         ████████──────────────────────────────────────────
+Input Row 2:               ████████──────────────────────────────────
+...
+Input Row 7:                                         ████████──────────
+               │    │    │    │    │    │    │    │    │    │    │
+Row DCT 0:          ░░░░░░░░░████──────────────────────────────────
+Row DCT 1:                ░░░░░░░░░████──────────────────────────────
+Row DCT 2:                      ░░░░░░░░░████──────────────────────
+...
+Row DCT 7:                                      ░░░░░░░░░████──────
+               │    │    │    │    │    │    │    │    │    │    │
+Transpose:                                           ████████████──
+               │    │    │    │    │    │    │    │    │    │    │
+Col DCT:                                                ░░░░░░░░░████████
+               │    │    │    │    │    │    │    │    │    │    │
+Output:                                                     ████████████
+
+Legend:
+████ = Active processing
+░░░░ = Pipeline latency
+──── = Idle
+
+
+================================================================================
+                         RESOURCE BREAKDOWN
+================================================================================
+
+┌────────────────────────────────────────────────────────────────────────────┐
+│  Module                    │  DSP  │  BRAM  │  LUT   │  FF    │  Fmax     │
+├────────────────────────────┼───────┼────────┼────────┼────────┼───────────┤
+│  dct1d_loeffler (Row)      │  11   │   0    │  ~800  │  ~600  │  250 MHz  │
+│  transpose_buffer          │   0   │   2    │  ~100  │  ~100  │  300 MHz  │
+│  dct1d_loeffler (Column)   │  11   │   0    │  ~800  │  ~600  │  250 MHz  │
+│  dct2d_top (control)       │   0   │   0    │  ~300  │  ~200  │  300 MHz  │
+├────────────────────────────┼───────┼────────┼────────┼────────┼───────────┤
+│  TOTAL                     │  22   │   2    │ ~2000  │ ~1500  │  200 MHz  │
+└────────────────────────────────────────────────────────────────────────────┘
+
+Target Device: Xilinx Artix-7 xc7a35t
+Utilization:   DSP: ~24%  BRAM: ~2%  LUT: ~10%  FF: ~3%
+
+
+================================================================================
+                         DATAPATH WIDTH
+================================================================================
+
+Stage                  │  Width    │  Format        │  Range
+───────────────────────┼───────────┼────────────────┼──────────────────────
+Input pixels           │  8-bit    │  Unsigned      │  0 to 255
+Centered input         │  9-bit    │  Signed        │  -128 to 127
+First butterfly        │  10-bit   │  Signed        │  -256 to 255
+Second butterfly       │  11-bit   │  Signed        │  -512 to 511
+After multiplication   │  25-bit   │  Signed        │  (11+14 bits)
+DCT coefficients       │  16-bit   │  Signed        │  -32768 to 32767
+
+
+================================================================================
+                    LOEFFLER ALGORITHM DETAIL
+================================================================================
+
+Input:  x[0..7]  (8 samples)
+Output: X[0..7]  (8 DCT coefficients)
+
+Computational Complexity:
+  • Multiplications: 11 (vs. 64 for naive implementation)
+  • Additions: 29 (vs. 112 for naive)
+  • Speedup: ~5.8× over naive implementation
+
+Cosine Coefficients (Q1.14 format):
+  C1 = cos(1π/16) × 2^14 = 16069
+  C2 = cos(2π/16) × 2^14 = 15137
+  C3 = cos(3π/16) × 2^14 = 13623
+  C4 = cos(4π/16) × 2^14 = 11585
+  C5 = cos(5π/16) × 2^14 =  9102
+  C6 = cos(6π/16) × 2^14 =  6270
+  C7 = cos(7π/16) × 2^14 =  3196
+
+
+================================================================================
+                         INTERFACE SIGNALS
+================================================================================
+
+AXI4-Stream Slave (Input):
+┌─────────────────┬───────┬──────────────────────────────────────────────────┐
+│ Signal          │ Width │ Description                                      │
+├─────────────────┼───────┼──────────────────────────────────────────────────┤
+│ s_axis_tvalid   │   1   │ Input data valid                                │
+│ s_axis_tready   │   1   │ Ready to accept data                            │
+│ s_axis_tdata    │   8   │ Input pixel (unsigned)                          │
+│ s_axis_tlast    │   1   │ Last pixel of 8×8 block                         │
+└─────────────────┴───────┴──────────────────────────────────────────────────┘
+
+AXI4-Stream Master (Output):
+┌─────────────────┬───────┬──────────────────────────────────────────────────┐
+│ Signal          │ Width │ Description                                      │
+├─────────────────┼───────┼──────────────────────────────────────────────────┤
+│ m_axis_tvalid   │   1   │ Output data valid                               │
+│ m_axis_tready   │   1   │ Downstream ready to accept                      │
+│ m_axis_tdata    │  16   │ DCT coefficient (signed)                        │
+│ m_axis_tlast    │   1   │ Last coefficient of 8×8 block                   │
+└─────────────────┴───────┴──────────────────────────────────────────────────┘
+
+
+================================================================================
+                         FREQUENCY DOMAIN LAYOUT
+================================================================================
+
+DCT Output Coefficient Map (8×8):
+
+       0    1    2    3    4    5    6    7  ← Horizontal Frequency
+     ┌────┬────┬────┬────┬────┬────┬────┬────┐
+  0  │ DC │    │    │    │    │    │    │    │  ← Low frequency
+     ├────┼────┼────┼────┼────┼────┼────┼────┤
+  1  │    │▓▓▓▓│▓▓▓▓│    │    │    │    │    │
+     ├────┼────┼────┼────┼────┼────┼────┼────┤
+  2  │    │▓▓▓▓│▓▓▓▓│    │    │    │    │    │
+     ├────┼────┼────┼────┼────┼────┼────┼────┤
+  3  │    │    │    │░░░░│░░░░│    │    │    │
+     ├────┼────┼────┼────┼────┼────┼────┼────┤
+  4  │    │    │    │░░░░│░░░░│    │    │    │
+     ├────┼────┼────┼────┼────┼────┼────┼────┤
+  5  │    │    │    │    │    │░░░░│    │    │
+     ├────┼────┼────┼────┼────┼────┼────┼────┤
+  6  │    │    │    │    │    │    │░░░░│    │
+     ├────┼────┼────┼────┼────┼────┼────┼────┤
+  7  │    │    │    │    │    │    │    │░░░░│  ← High frequency
+     └────┴────┴────┴────┴────┴────┴────┴────┘
+      ↑
+   Vertical
+   Frequency
+
+Legend:
+  DC = DC component (average intensity)
+  ▓▓ = Low frequencies (most image energy here)
+  ░░ = High frequencies (edges, noise - can be heavily quantized)
+
+
+================================================================================
+                        PERFORMANCE METRICS
+================================================================================
+
+@ 200 MHz Clock Frequency:
+
+Latency:
+  • Input buffering:       64 cycles (8×8 pixels)
+  • Row DCT:               ~15 cycles per row × 8 = 120 cycles
+  • Transpose:             64 cycles
+  • Column DCT:            ~15 cycles per column × 8 = 120 cycles
+  • Total:                 ~368 cycles per block
+
+Throughput (steady-state):
+  • New block every:       64 cycles (limited by input rate)
+  • Frequency:             200 MHz = 5 ns per cycle
+  • Time per block:        320 ns
+  • Blocks per second:     3.125 million
+  • Pixels per second:     200 million (1 pixel/cycle)
+
+Real-World Performance:
+  • 1920×1080 (1080p):     8160 blocks/frame
+  • Frames per second:     383 fps
+  • 3840×2160 (4K):        32640 blocks/frame  
+  • Frames per second:     96 fps
+
+Power Consumption (Estimated):
+  • Dynamic:               ~50 mW @ 200 MHz (Artix-7)
+  • Static:                ~100 mW
+  • Total:                 ~150 mW
+
+
+================================================================================
+End of Architecture Diagram
+DCT 2D High-Speed FPGA Core v1.0
+================================================================================
+

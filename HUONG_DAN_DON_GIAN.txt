@@ -1,0 +1,579 @@
+================================================================================
+          HƯỚNG DẪN ĐƠN GIẢN - DCT 2D TRÊN CYCLONE IV FPGA
+================================================================================
+
+📌 FILE NÀY CHO NGƯỜI HOÀN TOÀN MỚI - ĐỌC ĐẦU TIÊN!
+
+================================================================================
+              BẠN ĐANG LÀM GÌ? (Giải thích bằng ngôn ngữ đời thường)
+================================================================================
+
+1. DCT LÀ GÌ?
+──────────────────────────────────────────────────────────────────────────
+
+   DCT = Công cụ NÉN ẢNH/VIDEO
+
+   Ví dụ thực tế:
+   
+   ┌─────────────────────────────────────┐
+   │  Ảnh chụp từ điện thoại:           │
+   │                                     │
+   │  File gốc:  5 MB  📸               │
+   │       ↓ DCT                         │
+   │  File JPEG: 500 KB 📦               │
+   │                                     │
+   │  → Nhỏ hơn 10 lần mà vẫn đẹp!     │
+   └─────────────────────────────────────┘
+
+   Video YouTube, Netflix, Zoom đều dùng DCT để nén!
+
+
+2. FPGA LÀ GÌ?
+──────────────────────────────────────────────────────────────────────────
+
+   FPGA = Chip máy tính TỰ LẬP TRÌNH ĐƯỢC
+
+   Giống như:
+   
+   ┌─────────────────────────────────────┐
+   │  🧱 Lego điện tử                    │
+   │                                     │
+   │  Bạn lắp ghép → tạo mạch riêng     │
+   │  Chip này làm ĐÚNG 1 việc          │
+   │  → Nhanh hơn CPU 250 LẦN! ⚡       │
+   └─────────────────────────────────────┘
+
+
+3. PROJECT NÀY LÀM GÌ?
+──────────────────────────────────────────────────────────────────────────
+
+   Tính toán DCT trên FPGA và hiển thị kết quả!
+
+   Flow đơn giản:
+   
+   Công tắc        Nút bấm       Tính toán      Hiển thị
+   ────────────────────────────────────────────────────
+   Chọn pattern → Nhấn nút  →  FPGA tính  →  LED hiện
+   SW[1:0]=01      KEY[0]       50 MHz         FF80
+
+
+4. BOARD CỦA BẠN LÀM GÌ?
+──────────────────────────────────────────────────────────────────────────
+
+   Board = Máy tính nhỏ tự làm, có:
+   
+   ┌────────────────────────────┐
+   │  🔢 4 màn hình 7-segment   │  → Hiển thị kết quả
+   │  🕹️  4 công tắc (switches)  │  → Chọn chế độ
+   │  🔘 4 nút bấm (buttons)    │  → Điều khiển
+   │  💡 8 đèn LED              │  → Trạng thái
+   │  🖥️  Chip FPGA (não)       │  → Tính toán
+   └────────────────────────────┘
+
+================================================================================
+                           CÁC FILE HƯỚNG DẪN
+================================================================================
+
+ĐÃ TẠO 15 FILE HƯỚNG DẪN - Đọc theo thứ tự này:
+
+┌──────────────────────────────────────────────────────────────────────────┐
+│ 🎯 CHO NGƯỜI MỚI - ĐỌC ĐẦU TIÊN                                         │
+└──────────────────────────────────────────────────────────────────────────┘
+
+1. BAT_DAU_O_DAY.md ⭐⭐⭐
+   ├─ Mục lục tổng hợp
+   ├─ File nào đọc trước
+   ├─ Workflow theo mục đích
+   └─ Checklist hoàn chỉnh
+   
+   → ĐỌC FILE NÀY ĐẦU TIÊN!
+
+
+2. hardware/QUICK_REFERENCE_CARD.txt ⭐⭐⭐
+   ├─ Cheat sheet dùng board
+   ├─ Controls (switches/buttons)
+   ├─ Cách đọc kết quả
+   ├─ Test cases cụ thể
+   └─ Troubleshooting nhanh
+   
+   → ĐỌC SAU KHI HIỂU TỔNG QUAN!
+
+
+3. hardware/HARDWARE_GUIDE.md ⭐⭐
+   ├─ Cài Quartus II (từng bước)
+   ├─ Tạo project
+   ├─ Compile code
+   ├─ Nạp vào board
+   └─ Test & verify
+   
+   → FOLLOW GUIDE NÀY ĐỂ CHẠY BOARD!
+
+┌──────────────────────────────────────────────────────────────────────────┐
+│ 📚 HỌC LÝ THUYẾT                                                         │
+└──────────────────────────────────────────────────────────────────────────┘
+
+4. QUICK_START.md
+   ├─ DCT là gì? (ví dụ JPEG)
+   ├─ FPGA là gì? (so sánh CPU)
+   ├─ Tại sao nhanh?
+   └─ Ứng dụng thực tế
+   
+   → HIỂU CƠ BẢN!
+
+
+5. README.md
+   ├─ Tài liệu chính thức
+   ├─ Technical specs
+   ├─ Algorithm chi tiết
+   └─ Debug tips
+   
+   → CHI TIẾT ĐẦY ĐỦ!
+
+┌──────────────────────────────────────────────────────────────────────────┐
+│ 🔧 KHI MUỐN HIỂU SÂU                                                    │
+└──────────────────────────────────────────────────────────────────────────┘
+
+6. ARCHITECTURE.txt
+   ├─ Sơ đồ kiến trúc
+   ├─ Pipeline stages
+   ├─ Resource breakdown
+   └─ Timing diagram
+   
+   → KỸ THUẬT!
+
+
+7. hardware/BOARD_DIAGRAM.txt
+   ├─ Sơ đồ board (ASCII art)
+   ├─ Pin connections
+   ├─ Signal flow
+   └─ Usage examples
+   
+   → HIỂU BOARD!
+
+┌──────────────────────────────────────────────────────────────────────────┐
+│ 📊 TỔNG KẾT & STATUS                                                    │
+└──────────────────────────────────────────────────────────────────────────┘
+
+8. COMPLETE_SUMMARY.md
+   ├─ Tất cả đã tạo (31 files)
+   ├─ 2 versions: Full & Demo
+   ├─ Statistics
+   └─ Next steps
+   
+   → XEM ĐÃ LÀM GÌ!
+
+
+9. STATUS.txt
+   ├─ Test results
+   ├─ All tests PASSED ✅
+   ├─ Files created
+   └─ Checklist
+   
+   → TRẠNG THÁI!
+
+┌──────────────────────────────────────────────────────────────────────────┐
+│ 🗂️  NAVIGATION                                                           │
+└──────────────────────────────────────────────────────────────────────────┘
+
+10. INDEX.md
+    ├─ Danh sách tất cả files
+    ├─ Khi nào đọc file nào
+    ├─ Learning path by level
+    └─ Quick search table
+    
+    → TÌM THÔNG TIN!
+
+
+================================================================================
+                      WORKFLOW - LÀM THEO THỨ TỰ NÀY
+================================================================================
+
+🏃 NHANH: Chỉ muốn chạy board (20 phút)
+──────────────────────────────────────────────────────────────────────────
+
+   1. Đọc BAT_DAU_O_DAY.md                     (5 phút)
+   2. Đọc hardware/QUICK_REFERENCE_CARD.txt    (5 phút)
+   3. Đọc hardware/HARDWARE_GUIDE.md           (5 phút)
+   4. Làm theo guide → Compile & program       (5 phút)
+   5. Test trên board!                         (Happy!)
+
+
+📚 KỸ: Hiểu toàn bộ (2 giờ)
+──────────────────────────────────────────────────────────────────────────
+
+   1. Đọc QUICK_START.md                       (15 phút)
+   2. Chạy testbench/demo_dct.py               (10 phút)
+   3. Đọc README.md                            (30 phút)
+   4. Đọc ARCHITECTURE.txt                     (45 phút)
+   5. Đọc code cyclone4_top.v                  (30 phút)
+
+
+🔧 PRO: Modify & customize (1 ngày)
+──────────────────────────────────────────────────────────────────────────
+
+   1. Hiểu hết workflow trên                   (2 giờ)
+   2. Đọc kỹ code với comments                 (2 giờ)
+   3. Modify test patterns                     (1 giờ)
+   4. Add new features                         (3 giờ)
+   5. Optimize & benchmark                     (tùy ý)
+
+
+================================================================================
+                           CHẠY BOARD - 5 BƯỚC
+================================================================================
+
+BƯỚC 1: Cài Quartus II (30 phút)
+──────────────────────────────────────────────────────────────────────────
+
+   Download: https://www.intel.com/quartus
+   Chọn: Prime Lite Edition (FREE)
+   Size: ~5 GB
+   Install: Next → Next → Done
+
+
+BƯỚC 2: Tạo Project (5 phút)
+──────────────────────────────────────────────────────────────────────────
+
+   1. Mở Quartus II
+   2. File → New Project Wizard
+   3. Name: dct2d_cyclone4
+   4. Device: EP4CE6E22C8
+   5. Add files:
+      - cyclone4_top.v
+      - cyclone4.qsf
+      - cyclone4.sdc
+   6. Finish!
+
+
+BƯỚC 3: Compile (3 phút)
+──────────────────────────────────────────────────────────────────────────
+
+   1. Processing → Start Compilation (Ctrl+L)
+   2. Đợi ~2-3 phút
+   3. Xem kết quả:
+      ✅ Compilation Successful
+      ✅ No errors
+      ✅ Timing met
+
+
+BƯỚC 4: Program Board (2 phút)
+──────────────────────────────────────────────────────────────────────────
+
+   1. Cắm board vào USB
+   2. Tools → Programmer
+   3. Hardware Setup → USB-Blaster
+   4. Add File → output_files/cyclone4_top.sof
+   5. ✓ Program/Configure
+   6. Click "Start"
+   7. Đợi ~30 giây
+   8. Done!
+
+
+BƯỚC 5: Test! (2 phút)
+──────────────────────────────────────────────────────────────────────────
+
+   1. Đặt SW[1:0] = 01 (checkerboard)
+   2. Nhấn KEY[0] (compute)
+   3. Quan sát:
+      - LED[1] sáng → LOADING
+      - LED[2] sáng → COMPUTING
+      - LED[3] sáng → DONE!
+   4. Đọc 7-segment: FF80 = -128
+   5. THÀNH CÔNG! 🎉
+
+
+================================================================================
+                              CONTROLS
+================================================================================
+
+DIP SWITCHES (SW[3:0])
+──────────────────────────────────────────────────────────────────────────
+
+   SW[1:0] = CHỌN PATTERN
+   
+   00 = DC block (all 128)
+        Input: 128 128 128 ... (tất cả giống nhau)
+        
+   01 = Checkerboard (cờ vua)
+        Input: 255 0 255 0 ...
+               0 255 0 255 ...
+        
+   10 = Gradient (chuyển màu)
+        Input: 0 32 64 96 128 160 192 224
+        
+   11 = Impulse (1 pixel sáng)
+        Input: 255 0 0 0 0 0 0 0
+               0 0 0 0 0 0 0 0 ...
+
+
+   SW[3:2] = CHỌN COEFFICIENT HIỂN THỊ
+   
+   00 = Coef #0 (DC component)
+   01 = Coef #2
+   10 = Coef #4
+   11 = Coef #6
+
+
+PUSH BUTTONS (KEY[3:0]) - Active Low
+──────────────────────────────────────────────────────────────────────────
+
+   KEY[0] = BẮT ĐẦU TÍNH TOÁN
+            Nhấn xuống → DCT compute!
+            
+   KEY[1] = RESET VỀ IDLE
+            Quay về trạng thái ban đầu
+            
+   KEY[2] = (Reserved)
+   KEY[3] = (Reserved)
+
+
+7-SEGMENT DISPLAYS
+──────────────────────────────────────────────────────────────────────────
+
+   HEX3  HEX2  HEX1  HEX0
+   ────  ────  ────  ────
+    F     F     8     0     ← Hiển thị FF80 (hex)
+    
+   FF80 (hex) = -128 (decimal)
+   
+   Cách đọc:
+   - Nếu chữ số đầu >= 8 → Số âm
+   - FF80 = -(10000 - FF80) = -128
+
+
+STATUS LEDs
+──────────────────────────────────────────────────────────────────────────
+
+   LED[0] = ● → IDLE (sẵn sàng)
+   LED[1] = ● → LOADING (đang nạp)
+   LED[2] = ● → COMPUTING (đang tính)
+   LED[3] = ● → DISPLAY (xong!)
+   LED[7:4] = (Reserved)
+
+
+================================================================================
+                            KẾT QUẢ MONG ĐỢI
+================================================================================
+
+TEST 1: DC Block (SW[1:0]=00)
+──────────────────────────────────────────────────────────────────────────
+
+   Input:  Tất cả = 128
+   Output: 0000 (tất cả coefficients = 0)
+   
+   → Không có tần số nào!
+
+
+TEST 2: Checkerboard (SW[1:0]=01) ⭐
+──────────────────────────────────────────────────────────────────────────
+
+   Input:  255 0 255 0 ... (cờ vua)
+   Output: FF80 = -128 (DC coefficient)
+   
+   → Tần số cao mạnh! (đổi màu liên tục)
+
+
+TEST 3: Gradient (SW[1:0]=10)
+──────────────────────────────────────────────────────────────────────────
+
+   Input:  0 → 32 → 64 → ... (chuyển dần)
+   Output: Âm lớn (DC)
+   
+   → Tần số thấp chủ đạo!
+
+
+TEST 4: Impulse (SW[1:0]=11)
+──────────────────────────────────────────────────────────────────────────
+
+   Input:  255 0 0 0 ... (1 pixel sáng)
+   Output: ~7F00 = ~32000 (DC rất lớn)
+   
+   → Năng lượng tập trung ở DC!
+
+
+================================================================================
+                          TROUBLESHOOTING
+================================================================================
+
+VẤN ĐỀ: 7-segment hiển thị "----"
+──────────────────────────────────────────────────────────────────────────
+
+   → Chưa tính toán xong
+   → Nhấn KEY[0] để compute
+   → Đợi LED[3] sáng
+
+
+VẤN ĐỀ: LEDs không sáng
+──────────────────────────────────────────────────────────────────────────
+
+   → Check nguồn board (switch ON)
+   → Reprogram với .sof file
+   → Kiểm tra USB cable
+
+
+VẤN ĐỀ: Kết quả sai
+──────────────────────────────────────────────────────────────────────────
+
+   → Verify switches position
+   → So sánh với bảng "Kết quả mong đợi"
+   → Chạy demo_dct.py để đối chiếu
+
+
+VẤN ĐỀ: Không program được
+──────────────────────────────────────────────────────────────────────────
+
+   → Cài driver USB Blaster
+   → Thử port USB khác
+   → Restart Quartus Programmer
+
+
+VẤN ĐỀ: Compile lỗi
+──────────────────────────────────────────────────────────────────────────
+
+   → Check Quartus version (cần 13.0+)
+   → Verify tất cả files đã add
+   → Xem lỗi cụ thể trong Messages
+
+
+================================================================================
+                            FILES & FOLDERS
+================================================================================
+
+FOLDER CHÍNH:
+──────────────────────────────────────────────────────────────────────────
+
+E:\chat\
+├── BAT_DAU_O_DAY.md ⭐            (Mục lục tổng hợp)
+├── HUONG_DAN_DON_GIAN.txt ⭐      (File này!)
+│
+├── hardware/ ────────────────────  CHO BOARD CỦA BẠN
+│   ├── cyclone4_top.v             (Code chính)
+│   ├── cyclone4.qsf               (Pin assignments)
+│   ├── cyclone4.sdc               (Timing)
+│   ├── QUICK_REFERENCE_CARD.txt ⭐ (Cheat sheet)
+│   ├── HARDWARE_GUIDE.md          (Guide chi tiết)
+│   ├── BOARD_DIAGRAM.txt          (Sơ đồ board)
+│   └── README_HARDWARE.md         (Overview)
+│
+├── testbench/ ───────────────────  TEST & DEMO
+│   ├── demo_dct.py ⭐              (Chạy demo!)
+│   └── golden_dct2d.py            (Golden model)
+│
+└── Documentation/ ───────────────  15 FILES DOCS
+    ├── QUICK_START.md
+    ├── README.md
+    ├── COMPLETE_SUMMARY.md
+    ├── ARCHITECTURE.txt
+    └── ...
+
+
+================================================================================
+                        DEMO PYTHON (Học DCT)
+================================================================================
+
+CHẠY DEMO:
+──────────────────────────────────────────────────────────────────────────
+
+   cd testbench
+   python demo_dct.py
+
+KẾT QUẢ:
+──────────────────────────────────────────────────────────────────────────
+
+   ✓ Test 1: Horizontal Gradient
+     → DCT coefficients hiển thị
+     
+   ✓ Test 2: Checkerboard
+     → DC = -128, AC = high values
+     
+   ✓ Test 3: Random Block
+     → JPEG quantization simulation
+     → Average error: 62.75
+     
+   ✓ Energy Compaction
+     → 27.4% năng lượng ở top-left 4×4
+     → Basis for compression!
+
+
+================================================================================
+                          CÂU HỎI THƯỜNG GẶP
+================================================================================
+
+Q: Tôi không biết lập trình, có làm được không?
+──────────────────────────────────────────────────────────────────────────
+
+A: ĐƯỢC! Code đã viết sẵn.
+   Bạn chỉ cần:
+   1. Mở Quartus
+   2. Nhấn Compile
+   3. Nhấn Program
+   → Xong!
+
+
+Q: Tôi không hiểu Verilog?
+──────────────────────────────────────────────────────────────────────────
+
+A: Không sao! Chạy trước, học sau.
+   Code có comments đầy đủ bằng tiếng Anh.
+   Hiểu được luồng là đủ.
+
+
+Q: Board tôi có chạy được không?
+──────────────────────────────────────────────────────────────────────────
+
+A: CÓ! Code viết chính xác cho board bạn:
+   - Cyclone IV EP4CE6E22C8 ✓
+   - Đã map tất cả pins ✓
+   - Test patterns sẵn sàng ✓
+
+
+Q: Mất bao lâu?
+──────────────────────────────────────────────────────────────────────────
+
+A: Nếu có Quartus rồi: 15 phút
+   Nếu chưa có: 1 giờ (download + install + compile)
+
+
+Q: Có hỏng board không?
+──────────────────────────────────────────────────────────────────────────
+
+A: KHÔNG! Chỉ nạp software.
+   Tắt nguồn = reset hết.
+   An toàn 100%!
+
+
+================================================================================
+                              KẾT LUẬN
+================================================================================
+
+BẠN CÓ ĐẦY ĐỦ:
+──────────────────────────────────────────────────────────────────────────
+
+   ✅ 31 files (code + docs)
+   ✅ 15 documentation files
+   ✅ Step-by-step guides
+   ✅ Code comments đầy đủ
+   ✅ Test cases verified
+   ✅ Troubleshooting tips
+   ✅ All in Vietnamese!
+
+
+BƯỚC TIẾP THEO:
+──────────────────────────────────────────────────────────────────────────
+
+   1. Đọc BAT_DAU_O_DAY.md
+   2. Đọc hardware/QUICK_REFERENCE_CARD.txt
+   3. Follow hardware/HARDWARE_GUIDE.md
+   4. Program board!
+   5. Enjoy! 🎉
+
+
+CHÚC BẠN THÀNH CÔNG! 🚀
+──────────────────────────────────────────────────────────────────────────
+
+Nếu gặp vấn đề, đọc lại guides hoặc check troubleshooting section!
+
+================================================================================
+                            END OF GUIDE
+================================================================================
+

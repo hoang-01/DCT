@@ -1,0 +1,307 @@
+================================================================================
+           CYCLONE IV FPGA BOARD - DCT 2D DEMO INTERFACE
+================================================================================
+
+                         ┌────────────────────────────┐
+                         │    USB MINI-B CONNECTOR    │
+                         │    (USB Blaster Programming)│
+                         └──────────┬─────────────────┘
+                                    │
+                     ┌──────────────┴──────────────┐
+                     │     USB TO JTAG CIRCUIT     │
+                     └──────────────┬──────────────┘
+                                    │
+      ╔═══════════════════════════════════════════════════════════╗
+      ║                  7-SEGMENT DISPLAYS                       ║
+      ║                                                           ║
+      ║       HEX3        HEX2        HEX1        HEX0           ║
+      ║     ╔═════╗     ╔═════╗     ╔═════╗     ╔═════╗         ║
+      ║     ║  8  ║     ║  8  ║     ║  8  ║     ║  8  ║         ║
+      ║     ║     ║     ║     ║     ║     ║     ║     ║         ║
+      ║     ╚═════╝     ╚═════╝     ╚═════╝     ╚═════╝         ║
+      ║                                                           ║
+      ║     Shows 16-bit DCT coefficient in hexadecimal          ║
+      ║     Example: FF80 = -128 decimal                         ║
+      ╚═══════════════════════════════════════════════════════════╝
+
+             ┌───────────────────────────────────────┐
+             │     CONFIGURATION SWITCHES            │
+             │                                       │
+             │  MODE SEL   [●][○]  JTAG/AS          │
+             └───────────────────────────────────────┘
+
+      ╔═══════════════════════════════════════════════════════════╗
+      ║                                                           ║
+      ║              CYCLONE IV EP4CE6E22C8                       ║
+      ║                                                           ║
+      ║                    FPGA CHIP                              ║
+      ║                                                           ║
+      ║         [Complex integrated circuit layout]              ║
+      ║                                                           ║
+      ║              6,272 Logic Elements                         ║
+      ║              30 Multipliers (18×18)                       ║
+      ║              276 Kbits Memory                             ║
+      ║                                                           ║
+      ║         Running at 50 MHz Clock Frequency                 ║
+      ║                                                           ║
+      ╚═══════════════════════════════════════════════════════════╝
+
+      ┌───────────────────────────────────────────────────────────┐
+      │                  50 MHz OSCILLATOR                        │
+      │                    [CRYSTAL]                              │
+      └───────────────────────────────────────────────────────────┘
+
+ ╔═══╗                                                        ╔═══╗
+ ║ G ║  GPIO HEADER J2                  GPIO HEADER J3       ║ G ║
+ ║ P ║  (40 pins)                        (40 pins)           ║ P ║
+ ║ I ║  ○○○○○○○○○○                      ○○○○○○○○○○          ║ I ║
+ ║ O ║  ○○○○○○○○○○                      ○○○○○○○○○○          ║ O ║
+ ║   ║  General Purpose                  General Purpose      ║   ║
+ ║   ║  Digital I/O                      Digital I/O          ║   ║
+ ╚═══╝  (for expansion)                  (for expansion)      ╚═══╝
+
+
+      ┌───────────────────────────────────────────────────────────┐
+      │                   DIP SWITCHES                            │
+      │                                                           │
+      │    SW3   SW2   SW1   SW0                                 │
+      │    [▼]   [▼]   [▼]   [▼]                                 │
+      │    ON ↓   ↓    ↓    ↓  ON                                │
+      │                                                           │
+      │    SW[3:2]: Select coefficient (00,01,10,11)             │
+      │    SW[1:0]: Select pattern (DC,Checker,Grad,Impulse)     │
+      │                                                           │
+      └───────────────────────────────────────────────────────────┘
+
+
+      ┌───────────────────────────────────────────────────────────┐
+      │                  PUSH BUTTONS (Active Low)                │
+      │                                                           │
+      │    KEY3      KEY2      KEY1      KEY0                    │
+      │    [   ]     [   ]     [   ]     [   ]                   │
+      │    Press     Press     Reset     Compute                 │
+      │    down      down      IDLE      DCT                     │
+      │                                                           │
+      └───────────────────────────────────────────────────────────┘
+
+
+      ╔═══════════════════════════════════════════════════════════╗
+      ║                      STATUS LEDs                          ║
+      ║                                                           ║
+      ║   LED7  LED6  LED5  LED4  LED3  LED2  LED1  LED0        ║
+      ║   [ ]   [ ]   [ ]   [ ]   [●]   [ ]   [ ]   [ ]         ║
+      ║                                                           ║
+      ║   LED[0] = IDLE state (ready)                            ║
+      ║   LED[1] = LOADING pattern                               ║
+      ║   LED[2] = COMPUTING DCT                                 ║
+      ║   LED[3] = DISPLAY result (shown above)                  ║
+      ║   LED[7:4] = Reserved                                    ║
+      ╚═══════════════════════════════════════════════════════════╝
+
+
+      ┌───────────────────────────────────────────────────────────┐
+      │                    POWER SUPPLY                           │
+      │                                                           │
+      │   DC 5V INPUT [●]───[REGULATOR]───[3.3V]                 │
+      │                                                           │
+      │   Power LED: [●] (always on when powered)                │
+      │                                                           │
+      └───────────────────────────────────────────────────────────┘
+
+
+================================================================================
+                          PIN CONNECTIONS SUMMARY
+================================================================================
+
+SIGNAL GROUP          PIN NUMBERS              DESCRIPTION
+--------------------------------------------------------------------------------
+Clock & Reset
+  clk_50mhz           PIN_23                   50 MHz oscillator
+  rst_n               PIN_25                   Reset button (active low)
+
+DIP Switches (4)
+  sw[0]               PIN_88                   Pattern select bit 0
+  sw[1]               PIN_89                   Pattern select bit 1
+  sw[2]               PIN_90                   Coefficient select bit 0
+  sw[3]               PIN_91                   Coefficient select bit 1
+
+Push Buttons (4)
+  key[0]              PIN_24                   Compute trigger
+  key[1]              PIN_64                   Reset to IDLE
+  key[2]              PIN_65                   (Reserved)
+  key[3]              PIN_66                   (Reserved)
+
+LEDs (8)
+  led[0]              PIN_87                   IDLE status
+  led[1]              PIN_86                   LOADING status
+  led[2]              PIN_85                   COMPUTING status
+  led[3]              PIN_84                   DISPLAY status
+  led[4-7]            PIN_83,80,77,76          Reserved
+
+7-Segment HEX0 (rightmost)
+  hex0[0-6]           PIN_128,121,125,129,     Segment a-g
+                      132,126,124
+
+7-Segment HEX1
+  hex1[0-6]           PIN_133,135,136,137,     Segment a-g
+                      141,138,143
+
+7-Segment HEX2
+  hex2[0-6]           PIN_144,1,2,3,7,4,10     Segment a-g
+
+7-Segment HEX3 (leftmost)
+  hex3[0-6]           PIN_11,13,14,15,30,      Segment a-g
+                      28,31
+
+
+================================================================================
+                         SIGNAL FLOW DIAGRAM
+================================================================================
+
+    USER INPUT              FPGA PROCESSING              OUTPUT DISPLAY
+    
+  ┌──────────┐           ┌─────────────────┐         ┌──────────────┐
+  │ Switches │──────────▶│  Pattern ROM    │         │              │
+  │  SW[1:0] │           │  (4 patterns)   │         │              │
+  └──────────┘           └────────┬────────┘         │              │
+                                  │                   │              │
+  ┌──────────┐                    │                   │              │
+  │  Button  │           ┌────────▼────────┐         │  7-Segment   │
+  │  KEY[0]  │──────────▶│   Control FSM   │         │   Displays   │
+  │ (Trigger)│           │  IDLE→LOAD→     │         │   HEX3-0     │
+  └──────────┘           │  COMPUTE→DISPLAY│         │              │
+                         └────────┬────────┘         │  Shows DCT   │
+                                  │                   │  Coefficient │
+  ┌──────────┐           ┌────────▼────────┐         │              │
+  │ Switches │           │   1D DCT Core   │         │              │
+  │  SW[3:2] │──┐        │   (Simplified)  │         │              │
+  │ (Select  │  │        │   8-point       │         │              │
+  │  Coef)   │  │        │   Matrix mult   │         │              │
+  └──────────┘  │        └────────┬────────┘         │              │
+                │                 │                   │              │
+                │        ┌────────▼────────┐         │              │
+                └───────▶│ Display Mux     │────────▶│              │
+                         │ (Select 1 of 8) │         │              │
+                         └────────┬────────┘         └──────────────┘
+                                  │
+                         ┌────────▼────────┐         ┌──────────────┐
+                         │ Hex to 7-Seg    │────────▶│   8 LEDs     │
+                         │ Decoder         │         │   (Status)   │
+                         └─────────────────┘         └──────────────┘
+
+
+================================================================================
+                         USAGE EXAMPLE WALKTHROUGH
+================================================================================
+
+STEP-BY-STEP: Computing DCT of Checkerboard Pattern
+----------------------------------------------------
+
+[1] INITIAL STATE
+    
+    7-Segment:  ----    (No data yet)
+    LEDs:       ●○○○○○○○  (LED[0] = IDLE)
+    Switches:   ↓↓↓↓ (all down)
+    
+[2] SELECT PATTERN
+
+    Action: Set SW[1:0] = 01 (checkerboard)
+    
+    SW3  SW2  SW1  SW0
+    [▼]  [▼]  [▲]  [▼]   ← SW1 UP, SW0 DOWN = binary 01
+    
+[3] SELECT COEFFICIENT
+
+    Action: Set SW[3:2] = 00 (DC coefficient)
+    
+    SW3  SW2  SW1  SW0
+    [▼]  [▼]  [▲]  [▼]   ← All settings correct
+    
+[4] TRIGGER COMPUTATION
+
+    Action: Press KEY[0] (push button down)
+    
+    LEDs sequence:
+    ●○○○○○○○  → IDLE
+    ○●○○○○○○  → LOADING (0.1 second)
+    ○○●○○○○○  → COMPUTING (0.5 seconds)
+    ○○○●○○○○  → DISPLAY (result ready!)
+    
+[5] READ RESULT
+
+    7-Segment displays:  F F 8 0
+    
+    Meaning: 0xFF80 = -128 in decimal
+    This is the DC coefficient of checkerboard pattern
+    
+[6] EXPLORE OTHER COEFFICIENTS
+
+    Action: Change SW[3:2] to 01, 10, 11
+    
+    SW[3:2] = 01 → Shows Coef #2
+    SW[3:2] = 10 → Shows Coef #4
+    SW[3:2] = 11 → Shows Coef #6
+    
+    No need to press KEY[0] again - it updates immediately!
+    
+[7] TRY ANOTHER PATTERN
+
+    Action: Change SW[1:0] to 11 (impulse)
+            Press KEY[0]
+            
+    Result: Different DCT coefficients!
+    DC coef will be much larger (positive)
+
+
+================================================================================
+                           TIMING DIAGRAM
+================================================================================
+
+Time     Action                  LEDs        7-Segment   Internal State
+----     ------                  ----        ---------   --------------
+0.0s     Power on                ●○○○○○○○    ----        IDLE
+1.0s     Set SW[1:0]=01          ●○○○○○○○    ----        IDLE
+2.0s     Press KEY[0]            ○●○○○○○○    ----        LOAD
+2.1s     Loading pixels          ○●○○○○○○    ----        LOAD
+2.2s     Start DCT               ○○●○○○○○    ----        COMPUTE
+2.7s     Computing done          ○○○●○○○○    FF80        DISPLAY
+3.0s     Change SW[3:2]=01       ○○○●○○○○    0A3C        DISPLAY
+4.0s     Press KEY[1]            ●○○○○○○○    0A3C        IDLE
+
+
+================================================================================
+                           BOARD PHOTO REFERENCE
+================================================================================
+
+(Referring to your actual board photo)
+
+Top Section:
+  - 4× 7-segment displays arranged horizontally
+  - "Cyclone IV" logo visible
+  
+Center:
+  - Large FPGA chip (black square with "Altera" marking)
+  - Oscillator near the chip
+  
+Left & Right Edges:
+  - Yellow pin headers (GPIO expansion)
+  - 2 rows of pins on each side
+  
+Bottom Section (from your photo):
+  - DIP switches (red/white toggles) - "ON" label visible
+  - Push buttons
+  - 8 LEDs in a row
+  - USB mini-B connector for programming
+
+Connectors:
+  - USB Blaster interface (for JTAG programming)
+  - DC power input jack
+
+
+================================================================================
+                            END OF DIAGRAM
+================================================================================
+
+For detailed programming instructions, see: HARDWARE_GUIDE.md
+For quick reference during operation, see: QUICK_REFERENCE_CARD.txt
+

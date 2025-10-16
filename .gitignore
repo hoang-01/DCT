@@ -1,0 +1,45 @@
+# Build outputs
+build/
+reports/
+sim_build/
+*.log
+*.jou
+*.pb
+*.wdb
+
+# Vivado
+*.cache/
+*.hw/
+*.ip_user_files/
+*.sim/
+*.runs/
+*.xpr
+.Xil/
+
+# HLS
+dct2d_hls_project/
+*.prj
+*.app
+solution*/
+
+# Simulation
+*.vcd
+*.wlf
+*.vstf
+transcript
+work/
+modelsim.ini
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+test_vectors.json
+tb_vectors.vh
+
+# System
+.DS_Store
+*.swp
+*.swo
+*~
+

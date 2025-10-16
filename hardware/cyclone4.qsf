@@ -1,0 +1,129 @@
+# ============================================================================
+# Quartus II Pin Assignment File for Cyclone IV FPGA Board
+# DCT 2D Demo Project
+# ============================================================================
+
+set_global_assignment -name FAMILY "Cyclone IV E"
+set_global_assignment -name DEVICE EP4CE6E22C8
+set_global_assignment -name TOP_LEVEL_ENTITY cyclone4_top
+set_global_assignment -name ORIGINAL_QUARTUS_VERSION 13.0
+set_global_assignment -name PROJECT_CREATION_TIME_DATE "19:00:00  OCTOBER 16, 2025"
+set_global_assignment -name LAST_QUARTUS_VERSION 13.0
+set_global_assignment -name MIN_CORE_JUNCTION_TEMP 0
+set_global_assignment -name MAX_CORE_JUNCTION_TEMP 85
+
+# ============================================================================
+# Clock and Reset
+# ============================================================================
+set_location_assignment PIN_23 -to clk_50mhz
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to clk_50mhz
+
+set_location_assignment PIN_25 -to rst_n
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to rst_n
+
+# ============================================================================
+# DIP Switches (SW0-SW3)
+# ============================================================================
+set_location_assignment PIN_88 -to sw[0]
+set_location_assignment PIN_89 -to sw[1]
+set_location_assignment PIN_90 -to sw[2]
+set_location_assignment PIN_91 -to sw[3]
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to sw[0]
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to sw[1]
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to sw[2]
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to sw[3]
+
+# ============================================================================
+# Push Buttons (KEY0-KEY3, active low)
+# ============================================================================
+set_location_assignment PIN_24 -to key[0]
+set_location_assignment PIN_64 -to key[1]
+set_location_assignment PIN_65 -to key[2]
+set_location_assignment PIN_66 -to key[3]
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to key[0]
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to key[1]
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to key[2]
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to key[3]
+
+# ============================================================================
+# 7-Segment Display HEX0 (rightmost)
+# ============================================================================
+set_location_assignment PIN_128 -to hex0[0]
+set_location_assignment PIN_121 -to hex0[1]
+set_location_assignment PIN_125 -to hex0[2]
+set_location_assignment PIN_129 -to hex0[3]
+set_location_assignment PIN_132 -to hex0[4]
+set_location_assignment PIN_126 -to hex0[5]
+set_location_assignment PIN_124 -to hex0[6]
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to hex0[*]
+
+# ============================================================================
+# 7-Segment Display HEX1
+# ============================================================================
+set_location_assignment PIN_133 -to hex1[0]
+set_location_assignment PIN_135 -to hex1[1]
+set_location_assignment PIN_136 -to hex1[2]
+set_location_assignment PIN_137 -to hex1[3]
+set_location_assignment PIN_141 -to hex1[4]
+set_location_assignment PIN_138 -to hex1[5]
+set_location_assignment PIN_143 -to hex1[6]
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to hex1[*]
+
+# ============================================================================
+# 7-Segment Display HEX2
+# ============================================================================
+set_location_assignment PIN_144 -to hex2[0]
+set_location_assignment PIN_1 -to hex2[1]
+set_location_assignment PIN_2 -to hex2[2]
+set_location_assignment PIN_3 -to hex2[3]
+set_location_assignment PIN_7 -to hex2[4]
+set_location_assignment PIN_4 -to hex2[5]
+set_location_assignment PIN_10 -to hex2[6]
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to hex2[*]
+
+# ============================================================================
+# 7-Segment Display HEX3 (leftmost)
+# ============================================================================
+set_location_assignment PIN_11 -to hex3[0]
+set_location_assignment PIN_13 -to hex3[1]
+set_location_assignment PIN_14 -to hex3[2]
+set_location_assignment PIN_15 -to hex3[3]
+set_location_assignment PIN_30 -to hex3[4]
+set_location_assignment PIN_28 -to hex3[5]
+set_location_assignment PIN_31 -to hex3[6]
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to hex3[*]
+
+# ============================================================================
+# LEDs (LED0-LED7)
+# ============================================================================
+set_location_assignment PIN_87 -to led[0]
+set_location_assignment PIN_86 -to led[1]
+set_location_assignment PIN_85 -to led[2]
+set_location_assignment PIN_84 -to led[3]
+set_location_assignment PIN_83 -to led[4]
+set_location_assignment PIN_80 -to led[5]
+set_location_assignment PIN_77 -to led[6]
+set_location_assignment PIN_76 -to led[7]
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to led[*]
+
+# ============================================================================
+# Timing Constraints
+# ============================================================================
+create_clock -name {clk_50mhz} -period 20.000 -waveform { 0.000 10.000 } [get_ports {clk_50mhz}]
+
+# ============================================================================
+# Compilation Settings
+# ============================================================================
+set_global_assignment -name PARTITION_NETLIST_TYPE SOURCE -section_id Top
+set_global_assignment -name PARTITION_FITTER_PRESERVATION_LEVEL PLACEMENT_AND_ROUTING -section_id Top
+set_global_assignment -name PARTITION_COLOR 16764057 -section_id Top
+set_global_assignment -name STRATIX_DEVICE_IO_STANDARD "3.3-V LVTTL"
+set_global_assignment -name POWER_PRESET_COOLING_SOLUTION "23 MM HEAT SINK WITH 200 LFPM AIRFLOW"
+set_global_assignment -name POWER_BOARD_THERMAL_MODEL "NONE (CONSERVATIVE)"
+
+# ============================================================================
+# Source Files
+# ============================================================================
+set_global_assignment -name VERILOG_FILE cyclone4_top.v
+set_global_assignment -name SDC_FILE cyclone4.sdc
+
